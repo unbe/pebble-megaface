@@ -11,6 +11,7 @@ typedef struct _LayerInfo {
   TimeUnits changes_on;
   char buffer[BUFFER_SIZE];
   const char* font_key;
+  GColor8 color;
 } LayerInfo;
 
 static LayerInfo layers[] = {
@@ -19,24 +20,28 @@ static LayerInfo layers[] = {
     .changes_on = HOUR_UNIT,
     .frame = {{0, -8}, {144, 43}},
     .font_key = FONT_KEY_BITHAM_42_BOLD,
+    .color = { .argb = GColorWhiteARGB8 },
  },
  {  
     .get_text = &fuzzy_minutes_to_words,
     .changes_on = MINUTE_UNIT,
     .frame = {{0, 32}, {144, 43}},
     .font_key = FONT_KEY_BITHAM_42_LIGHT,
+    .color = { .argb = GColorWhiteARGB8 },
   },
  { 
     .get_text = &fuzzy_sminutes_to_words,
     .changes_on = MINUTE_UNIT,
     .frame = {{0, 72}, {144, 43}},
     .font_key = FONT_KEY_BITHAM_42_LIGHT,
+    .color = { .argb = GColorWhiteARGB8 },
  },
  { 
     .get_text = &fuzzy_dates_to_words,
     .changes_on = DAY_UNIT | MONTH_UNIT | YEAR_UNIT,
     .frame = {{0, 126}, {144, 29}},
     .font_key = FONT_KEY_GOTHIC_28_BOLD,
+    .color = { .argb = GColorWhiteARGB8 },
  },
 };
 static int num_layers = sizeof(layers)/sizeof(layers[0]);
@@ -59,7 +64,7 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
 static Layer* init_layer(LayerInfo* layer) {
   TextLayer *textLayer = layer->textLayer = text_layer_create(layer->frame);
   text_layer_set_background_color(textLayer, GColorClear);
-  text_layer_set_text_color(textLayer, GColorBlack);
+  text_layer_set_text_color(textLayer, layer->color);
 
   // Improve the layout to be more like a watchface
   text_layer_set_font(textLayer, fonts_get_system_font(layer->font_key));
@@ -70,6 +75,7 @@ static Layer* init_layer(LayerInfo* layer) {
 }
 
 static void main_window_load(Window *window) {
+  window_set_background_color(window, GColorBlack);
   for (int i = 0; i < num_layers; i++) {
     layer_add_child(window_get_root_layer(window), init_layer(&layers[i]));
   }
