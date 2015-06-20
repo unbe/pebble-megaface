@@ -1,60 +1,108 @@
 #include <pebble.h>
+#include "num2words.h"
 
-static Window *window;
-static TextLayer *text_layer;
+static Window *s_main_window;
 
-static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
-  text_layer_set_text(text_layer, "Select");
+typedef struct _LayerInfo {
+  TextLayer *textLayer;
+  Layer *layer;
+  GRect frame;
+  void (*get_text)(struct tm *t, char *buffer);
+  TimeUnits changes_on;
+  char buffer[BUFFER_SIZE];
+} LayerInfo;
+
+static LayerInfo layers[] = {
+ { 
+    .get_text = &fuzzy_hours_to_words,
+    .changes_on = HOUR_UNIT,
+    .frame = {{0, 0}, {144, 40}},
+ },
+ {  
+    .get_text = &fuzzy_minutes_to_words,
+    .changes_on = MINUTE_UNIT,
+    .frame = {{0, 40}, {144, 40}},
+  },
+ { 
+    .get_text = &fuzzy_sminutes_to_words,
+    .changes_on = MINUTE_UNIT,
+    .frame = {{0, 80}, {144, 40}},
+ },
+};
+static int num_layers = sizeof(layers)/sizeof(layers[0]);
+
+static void update_time(struct tm *tick_time, TimeUnits units_changed) {
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "update_time START");
+  for (int i = 0; i < num_layers; i++) {
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "update_time p1: %d", i);
+    LayerInfo* layer = &(layers[i]);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "update_time p2: l=%p", layer);
+    if ((units_changed & layer->changes_on) == 0) {
+      continue;
+    }
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "update_time p3: f=%p b=%p", layer->get_text, layer->buffer);
+    layer->get_text(tick_time, layer->buffer);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "update_time p4: %s", layer->buffer);
+    text_layer_set_text(layer->textLayer, layer->buffer);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "update_time p5");
+  }
 }
 
-static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
-  text_layer_set_text(text_layer, "Up");
+static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
+  update_time(tick_time, units_changed);
 }
 
-static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
-  text_layer_set_text(text_layer, "Down");
+static Layer* init_layer(LayerInfo* layer) {
+  TextLayer *textLayer = layer->textLayer = text_layer_create(layer->frame);
+  text_layer_set_background_color(textLayer, GColorClear);
+  text_layer_set_text_color(textLayer, GColorBlack);
+
+  // Improve the layout to be more like a watchface
+  text_layer_set_font(textLayer, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
+  text_layer_set_text_alignment(textLayer, GTextAlignmentCenter);
+
+  // Add it as a child layer to the Window's root layer
+  return text_layer_get_layer(textLayer);
 }
 
-static void click_config_provider(void *context) {
-  window_single_click_subscribe(BUTTON_ID_SELECT, select_click_handler);
-  window_single_click_subscribe(BUTTON_ID_UP, up_click_handler);
-  window_single_click_subscribe(BUTTON_ID_DOWN, down_click_handler);
+static void main_window_load(Window *window) {
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "Initializing on window: %p", window);
+  for (int i = 0; i < num_layers; i++) {
+    layer_add_child(window_get_root_layer(window), init_layer(&layers[i]));
+  }
+  time_t temp = time(NULL); 
+  struct tm *tick_time = localtime(&temp);
+  update_time(tick_time, SECOND_UNIT | MINUTE_UNIT | HOUR_UNIT | DAY_UNIT | MONTH_UNIT | YEAR_UNIT);
 }
 
-static void window_load(Window *window) {
-  Layer *window_layer = window_get_root_layer(window);
-  GRect bounds = layer_get_bounds(window_layer);
+static void main_window_unload(Window *window) {
 
-  text_layer = text_layer_create((GRect) { .origin = { 0, 72 }, .size = { bounds.size.w, 20 } });
-  text_layer_set_text(text_layer, "Press a button");
-  text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
-  layer_add_child(window_layer, text_layer_get_layer(text_layer));
-}
-
-static void window_unload(Window *window) {
-  text_layer_destroy(text_layer);
 }
 
 static void init(void) {
-  window = window_create();
-  window_set_click_config_provider(window, click_config_provider);
-  window_set_window_handlers(window, (WindowHandlers) {
-    .load = window_load,
-    .unload = window_unload,
+  // Create main Window element and assign to pointer
+  s_main_window = window_create();
+
+  // Set handlers to manage the elements inside the Window
+  window_set_window_handlers(s_main_window, (WindowHandlers) {
+    .load = main_window_load,
+    .unload = main_window_unload
   });
-  const bool animated = true;
-  window_stack_push(window, animated);
+
+  // Show the Window on the watch, with animated=true
+  window_stack_push(s_main_window, true);
+
+  // Register with TickTimerService
+  tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
 }
 
 static void deinit(void) {
-  window_destroy(window);
+  // Destroy Window
+  window_destroy(s_main_window);
 }
 
 int main(void) {
   init();
-
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Done initializing, pushed window: %p", window);
-
   app_event_loop();
   deinit();
 }
