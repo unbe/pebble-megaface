@@ -36,19 +36,13 @@ static LayerInfo layers[] = {
 static int num_layers = sizeof(layers)/sizeof(layers[0]);
 
 static void update_time(struct tm *tick_time, TimeUnits units_changed) {
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "update_time START");
   for (int i = 0; i < num_layers; i++) {
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "update_time p1: %d", i);
     LayerInfo* layer = &(layers[i]);
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "update_time p2: l=%p", layer);
     if ((units_changed & layer->changes_on) == 0) {
       continue;
     }
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "update_time p3: f=%p b=%p", layer->get_text, layer->buffer);
     layer->get_text(tick_time, layer->buffer);
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "update_time p4: %s", layer->buffer);
     text_layer_set_text(layer->textLayer, layer->buffer);
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "update_time p5");
   }
 }
 
@@ -70,7 +64,6 @@ static Layer* init_layer(LayerInfo* layer) {
 }
 
 static void main_window_load(Window *window) {
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Initializing on window: %p", window);
   for (int i = 0; i < num_layers; i++) {
     layer_add_child(window_get_root_layer(window), init_layer(&layers[i]));
   }
