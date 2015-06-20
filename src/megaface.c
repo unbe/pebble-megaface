@@ -17,19 +17,19 @@ static LayerInfo layers[] = {
  { 
     .get_text = &fuzzy_hours_to_words,
     .changes_on = HOUR_UNIT,
-    .frame = {{0, 0}, {144, 40}},
-    .font_key = FONT_KEY_BITHAM_42_LIGHT,
+    .frame = {{0, -8}, {144, 48}},
+    .font_key = FONT_KEY_BITHAM_42_BOLD,
  },
  {  
     .get_text = &fuzzy_minutes_to_words,
     .changes_on = MINUTE_UNIT,
-    .frame = {{0, 40}, {144, 40}},
+    .frame = {{0, 32}, {144, 48}},
     .font_key = FONT_KEY_BITHAM_42_LIGHT,
   },
  { 
     .get_text = &fuzzy_sminutes_to_words,
     .changes_on = MINUTE_UNIT,
-    .frame = {{0, 80}, {144, 40}},
+    .frame = {{0, 72}, {144, 48}},
     .font_key = FONT_KEY_BITHAM_42_LIGHT,
  },
 };
@@ -63,7 +63,7 @@ static Layer* init_layer(LayerInfo* layer) {
 
   // Improve the layout to be more like a watchface
   text_layer_set_font(textLayer, fonts_get_system_font(layer->font_key));
-  text_layer_set_text_alignment(textLayer, GTextAlignmentCenter);
+  text_layer_set_text_alignment(textLayer, GTextAlignmentLeft);
 
   // Add it as a child layer to the Window's root layer
   return text_layer_get_layer(textLayer);
