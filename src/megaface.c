@@ -17,20 +17,26 @@ static LayerInfo layers[] = {
  { 
     .get_text = &fuzzy_hours_to_words,
     .changes_on = HOUR_UNIT,
-    .frame = {{0, -8}, {144, 48}},
+    .frame = {{0, -8}, {144, 43}},
     .font_key = FONT_KEY_BITHAM_42_BOLD,
  },
  {  
     .get_text = &fuzzy_minutes_to_words,
     .changes_on = MINUTE_UNIT,
-    .frame = {{0, 32}, {144, 48}},
+    .frame = {{0, 32}, {144, 43}},
     .font_key = FONT_KEY_BITHAM_42_LIGHT,
   },
  { 
     .get_text = &fuzzy_sminutes_to_words,
     .changes_on = MINUTE_UNIT,
-    .frame = {{0, 72}, {144, 48}},
+    .frame = {{0, 72}, {144, 43}},
     .font_key = FONT_KEY_BITHAM_42_LIGHT,
+ },
+ { 
+    .get_text = &fuzzy_dates_to_words,
+    .changes_on = DAY_UNIT | MONTH_UNIT | YEAR_UNIT,
+    .frame = {{0, 126}, {144, 29}},
+    .font_key = FONT_KEY_GOTHIC_28_BOLD,
  },
 };
 static int num_layers = sizeof(layers)/sizeof(layers[0]);
