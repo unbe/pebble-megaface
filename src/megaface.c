@@ -10,6 +10,7 @@ typedef struct _LayerInfo {
   void (*get_text)(struct tm *t, char *buffer);
   TimeUnits changes_on;
   char buffer[BUFFER_SIZE];
+  const char* font_key;
 } LayerInfo;
 
 static LayerInfo layers[] = {
@@ -17,16 +18,19 @@ static LayerInfo layers[] = {
     .get_text = &fuzzy_hours_to_words,
     .changes_on = HOUR_UNIT,
     .frame = {{0, 0}, {144, 40}},
+    .font_key = FONT_KEY_BITHAM_42_LIGHT,
  },
  {  
     .get_text = &fuzzy_minutes_to_words,
     .changes_on = MINUTE_UNIT,
     .frame = {{0, 40}, {144, 40}},
+    .font_key = FONT_KEY_BITHAM_42_LIGHT,
   },
  { 
     .get_text = &fuzzy_sminutes_to_words,
     .changes_on = MINUTE_UNIT,
     .frame = {{0, 80}, {144, 40}},
+    .font_key = FONT_KEY_BITHAM_42_LIGHT,
  },
 };
 static int num_layers = sizeof(layers)/sizeof(layers[0]);
@@ -58,7 +62,7 @@ static Layer* init_layer(LayerInfo* layer) {
   text_layer_set_text_color(textLayer, GColorBlack);
 
   // Improve the layout to be more like a watchface
-  text_layer_set_font(textLayer, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
+  text_layer_set_font(textLayer, fonts_get_system_font(layer->font_key));
   text_layer_set_text_alignment(textLayer, GTextAlignmentCenter);
 
   // Add it as a child layer to the Window's root layer
