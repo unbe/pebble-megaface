@@ -13,7 +13,7 @@ Differences:
  - (TODO) Seconds display
 
 Known bugs:
- - Displays "noon oh one" and so on.
+ - Displays "noon oh one" instead of "twelve oh one".
 
 ![Screenshots](/screenshots.gif?raw=true "Screenshots")
 (battery full/low/critical/charging)
