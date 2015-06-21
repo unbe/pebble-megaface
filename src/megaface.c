@@ -43,13 +43,17 @@ static void text_init_layer(Facet* facet) {
 static void battery_draw_layer(Facet* facet, Layer *layer, GContext *ctx) {
   GRect bounds = layer_get_bounds(layer);
   int blocks = (facet->charge.charge_percent - 1) / 10 + 1;
-  if (blocks == 1) {
-    graphics_context_set_fill_color(ctx, GColorRed);
+  GColor color;
+  if (facet->charge.is_charging) {
+    color = GColorGreen;
+  } else if (blocks == 1) {
+    color = GColorRed;
   } else if(blocks <= 3) {
-    graphics_context_set_fill_color(ctx, GColorYellow);
+    color = GColorYellow;
   } else {
-    graphics_context_set_fill_color(ctx, GColorWhite);
+    color = GColorWhite;
   }
+  graphics_context_set_fill_color(ctx, color);
 
   int gap = 2;
   int block_step = (bounds.size.w + gap) / 10;
@@ -74,7 +78,7 @@ static Facet facets[] = {
     .init = &graphic_init_layer,
     .draw = &battery_draw_layer,
     .handle_battery = &battery_copy_state,
-    .frame = {{0, 160}, {144, 4}},
+    .frame = {{0, 162}, {144, 3}},
     .color = { .argb = GColorWhiteARGB8 },
  },
  { 
@@ -109,7 +113,7 @@ static Facet facets[] = {
     .handle_tick = &text_tick_handler,
     .get_text = &fuzzy_dates_to_words,
     .changes_on = DAY_UNIT | MONTH_UNIT | YEAR_UNIT,
-    .frame = {{0, 120}, {144, 36}},
+    .frame = {{0, 124}, {144, 36}},
     .font_key = FONT_KEY_GOTHIC_28_BOLD,
     .color = { .argb = GColorWhiteARGB8 },
  },
