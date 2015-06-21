@@ -9,7 +9,7 @@ Differences:
  - Pebble Time (color screen) support
  - Battery level display
  - Internals mostly rewritten
- - (TODO) Notification on bluetooth disconnect
+ - Notification on bluetooth disconnect
  - (TODO) Seconds display
 
 Known bugs:
