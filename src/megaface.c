@@ -72,11 +72,19 @@ static void battery_copy_state(Facet* facet, BatteryChargeState charge) {
   layer_mark_dirty(facet->layer);
 }
 
-static void vibrate_on_disconnect(Facet* facet, bool connected) {
+static void bluetooth_notify_handler(Facet* facet, bool connected) {
+  static const uint32_t const segments[] = { 200, 100, 400, 100, 600 };
+  VibePattern pat = {
+    .durations = segments,
+    .num_segments = ARRAY_LENGTH(segments),
+  };
   if (facet->last_bluetooth_state && !connected) {
-    vibes_long_pulse();
+    vibes_enqueue_custom_pattern(pat);
   }
   facet->last_bluetooth_state = connected;
+  facet->buffer[0] = connected ? 0 : '!';
+  facet->buffer[1] = 0;
+  text_layer_set_text(facet->textLayer, facet->buffer);
 }
 
 static void graphic_draw_layer(Layer *layer, GContext *ctx);
@@ -90,8 +98,12 @@ static Facet facets[] = {
     .frame = {{0, 162}, {144, 3}},
   },
   {
-    .handle_bluetooth = &vibrate_on_disconnect,
+    .init = &text_init_layer,
+    .frame = {{124, 110}, {24, 50}},
+    .handle_bluetooth = &bluetooth_notify_handler,
     .last_bluetooth_state = false,
+    .color = { .argb = GColorRedARGB8 },
+    .font_key = FONT_KEY_BITHAM_42_BOLD,
   },
   {
     .init = &text_init_layer,
@@ -131,7 +143,7 @@ static Facet facets[] = {
   },
 };
 
-static int num_facets = sizeof(facets)/sizeof(facets[0]);
+static int num_facets = ARRAY_LENGTH(facets);
 
 static void graphic_draw_layer(Layer *layer, GContext *ctx) {
   for (int i = 0; i < num_facets; i++) {
