@@ -6,3 +6,6 @@ Diff from the original:
  - Battery level display
  - Internals mostly rewritten
  - (TODO) Notification on bluetooth disconnect
+ - (TODO) Seconds display
+
+![Screenshots](/screenshots.gif?raw=true "Screenshots")
