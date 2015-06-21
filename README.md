@@ -8,4 +8,5 @@ Diff from the original:
  - (TODO) Notification on bluetooth disconnect
  - (TODO) Seconds display
 
+Screenshot (with battery normal/low/critical/charging)
 ![Screenshots](/screenshots.gif?raw=true "Screenshots")
