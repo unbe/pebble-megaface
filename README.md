@@ -13,4 +13,4 @@ Diff from the original:
  - (TODO) Seconds display
 
 ![Screenshots](/screenshots.gif?raw=true "Screenshots")
-(battery normal/low/critical/charging)
+(battery full/low/critical/charging)
