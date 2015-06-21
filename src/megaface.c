@@ -56,11 +56,11 @@ static void battery_draw_layer(Facet* facet, Layer *layer, GContext *ctx) {
   graphics_context_set_fill_color(ctx, color);
 
   int gap = 2;
-  int block_step = (bounds.size.w + gap) / 10;
+  int block_step = bounds.size.w / 10;
   GSize block_sz = { .w = block_step - gap, .h = bounds.size.h };
 
   for (int i = 0; i < blocks; i++) {
-    GRect block = {{bounds.origin.x + block_step * i, bounds.origin.y}, block_sz};
+    GRect block = {{gap + bounds.origin.x + block_step * i, bounds.origin.y}, block_sz};
     graphics_fill_rect(ctx, block, 0, GCornerNone);
   }
 }
