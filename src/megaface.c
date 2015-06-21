@@ -11,6 +11,7 @@ typedef struct _Facet {
   void (*init)(struct _Facet* facet);
   void (*handle_tick)(struct _Facet* facet, struct tm *tick_time, TimeUnits units_changed);
   void (*handle_battery)(struct _Facet* facet, BatteryChargeState charge);
+  void (*handle_bluetooth)(struct _Facet* facet, bool connected);
 
   // Graphic facets
   void (*draw)(struct _Facet* facet, Layer *layer, GContext *ctx);
@@ -23,6 +24,7 @@ typedef struct _Facet {
 
   // Misc private data :)
   BatteryChargeState charge;
+  bool last_bluetooth_state;
 } Facet;
 
 static void text_tick_handler(Facet* facet, struct tm *tick_time, TimeUnits units_changed) {
@@ -70,17 +72,28 @@ static void battery_copy_state(Facet* facet, BatteryChargeState charge) {
   layer_mark_dirty(facet->layer);
 }
 
+static void vibrate_on_disconnect(Facet* facet, bool connected) {
+  if (facet->last_bluetooth_state && !connected) {
+    vibes_long_pulse();
+  }
+  facet->last_bluetooth_state = connected;
+}
+
 static void graphic_draw_layer(Layer *layer, GContext *ctx);
 static void graphic_init_layer(Facet* facet);
 
 static Facet facets[] = {
-  { 
+  {
     .init = &graphic_init_layer,
     .draw = &battery_draw_layer,
     .handle_battery = &battery_copy_state,
     .frame = {{0, 162}, {144, 3}},
- },
- { 
+  },
+  {
+    .handle_bluetooth = &vibrate_on_disconnect,
+    .last_bluetooth_state = false,
+  },
+  {
     .init = &text_init_layer,
     .handle_tick = &text_tick_handler,
     .get_text = &fuzzy_hours_to_words,
@@ -88,8 +101,8 @@ static Facet facets[] = {
     .frame = {{0, -8}, {144, 50}},
     .font_key = FONT_KEY_BITHAM_42_BOLD,
     .color = { .argb = GColorYellowARGB8 },
- },
- {  
+  },
+  {
     .init = &text_init_layer,
     .handle_tick = &text_tick_handler,
     .get_text = &fuzzy_minutes_to_words,
@@ -98,7 +111,7 @@ static Facet facets[] = {
     .font_key = FONT_KEY_BITHAM_42_LIGHT,
     .color = { .argb = GColorWhiteARGB8 },
   },
- { 
+  {
     .init = &text_init_layer,
     .handle_tick = &text_tick_handler,
     .get_text = &fuzzy_sminutes_to_words,
@@ -106,8 +119,8 @@ static Facet facets[] = {
     .frame = {{0, 72}, {144, 50}},
     .font_key = FONT_KEY_BITHAM_42_LIGHT,
     .color = { .argb = GColorWhiteARGB8 },
- },
- { 
+  },
+  {
     .init = &text_init_layer,
     .handle_tick = &text_tick_handler,
     .get_text = &fuzzy_dates_to_words,
@@ -115,7 +128,7 @@ static Facet facets[] = {
     .frame = {{0, 124}, {144, 36}},
     .font_key = FONT_KEY_GOTHIC_28_BOLD,
     .color = { .argb = GColorWhiteARGB8 },
- },
+  },
 };
 
 static int num_facets = sizeof(facets)/sizeof(facets[0]);
@@ -153,6 +166,16 @@ static void battery_handler(BatteryChargeState charge) {
   }
 }
 
+static void bluetooth_handler(bool connected) {
+  for (int i = 0; i < num_facets; i++) {
+    Facet* facet = &(facets[i]);
+    if (facet->handle_bluetooth) {
+      facet->handle_bluetooth(facet, connected);
+    }
+  }
+}
+
+
 static void main_window_load(Window *window) {
   window_set_background_color(window, GColorBlack);
   for (int i = 0; i < num_facets; i++) {
@@ -164,16 +187,15 @@ static void main_window_load(Window *window) {
       layer_add_child(window_get_root_layer(window), facet->layer);
     }
   }
-  time_t temp = time(NULL); 
+  time_t temp = time(NULL);
   struct tm *tick_time = localtime(&temp);
   tick_handler(tick_time, SECOND_UNIT | MINUTE_UNIT | HOUR_UNIT |
                           DAY_UNIT | MONTH_UNIT | YEAR_UNIT);
   battery_handler(battery_state_service_peek());
+  bluetooth_handler(bluetooth_connection_service_peek());
 }
 
-static void main_window_unload(Window *window) {
-
-}
+static void main_window_unload(Window *window) { }
 
 static void init(void) {
   // Create main Window element and assign to pointer
@@ -191,6 +213,7 @@ static void init(void) {
   // Register with TickTimerService
   tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
   battery_state_service_subscribe(battery_handler);
+  bluetooth_connection_service_subscribe(bluetooth_handler);
 }
 
 static void deinit(void) {
