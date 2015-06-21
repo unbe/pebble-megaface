@@ -1,12 +1,16 @@
+Megaface
+========
 
-Creatively reworked version of: https://github.com/Marckus/Words_Date_Day2
+### A Pebble Time watchface that I like.
+
+Creatively reworked version of https://github.com/Marckus/Words_Date_Day2
 
 Diff from the original:
- - Pebble Time / color screens support
+ - Pebble Time (color screen) support
  - Battery level display
  - Internals mostly rewritten
  - (TODO) Notification on bluetooth disconnect
  - (TODO) Seconds display
 
-Screenshot (with battery normal/low/critical/charging)
 ![Screenshots](/screenshots.gif?raw=true "Screenshots")
+(battery normal/low/critical/charging)
