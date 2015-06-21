@@ -79,7 +79,6 @@ static Facet facets[] = {
     .draw = &battery_draw_layer,
     .handle_battery = &battery_copy_state,
     .frame = {{0, 162}, {144, 3}},
-    .color = { .argb = GColorWhiteARGB8 },
  },
  { 
     .init = &text_init_layer,
