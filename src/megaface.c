@@ -28,6 +28,10 @@ typedef struct _Facet {
 } Facet;
 
 static void text_tick_handler(Facet* facet, struct tm *tick_time, TimeUnits units_changed) {
+#ifdef MAKE_A_NICE_SCREENSHOT
+  tick_time->tm_hour = 10;
+  tick_time->tm_min = 9;
+#endif
   facet->get_text(tick_time, facet->buffer);
   text_layer_set_text(facet->textLayer, facet->buffer);
 }

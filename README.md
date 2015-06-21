@@ -16,4 +16,4 @@ Known bugs:
  - Displays "noon oh one" instead of "twelve oh one".
 
 ![Screenshots](/screenshots.gif?raw=true "Screenshots")
-(battery full/low/critical/charging)
+(battery full/low/critical/charging and bluetooth disconnected)
